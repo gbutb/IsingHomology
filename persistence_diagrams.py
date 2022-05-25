@@ -102,6 +102,7 @@ def main(args):
         ax = fig.add_subplot(111, projection='3d')
         plot_rips(ax, f, torus, 2*b)
         plt.savefig(os.path.join(args.path_to_output, f"{i}_torus.svg"), format='svg')
+        plt.close(fig)
 
         fig_barcode = plt.figure(figsize = (17,9))
         ax_barcode = fig_barcode.add_subplot(111)
@@ -111,6 +112,7 @@ def main(args):
         ax_barcode.grid(True)
         ax_barcode.set_title(f"Persistence barcode of $H_{args.dim}(R_\delta)$ at $T={T[i]}$. Persistent generators {num_persistent}.")
         plt.savefig(os.path.join(args.path_to_output, f"{i}_barcode.svg"), format='svg')
+        plt.close(fig_barcode)
 
         # Progress
         sys.stdout.write('\r')
