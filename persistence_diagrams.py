@@ -76,6 +76,9 @@ def plot_barcode(ax, barcode, persistence):
         domain = np.arange(b_id, d_id, 1)
         ax.plot(domain, i*np.ones(domain.shape)/10.0, ('b' if (d_id - b_id) / num_pts > 0.2 else 'k') if 'd' in barcode[i] else 'r', linewidth=0.8)
 
+def compute_magnetization(img):
+    return np.mean(img)
+
 
 def main(args):
     args_file = open(os.path.join(args.path_to_folder, "args.json"), 'r')
@@ -84,10 +87,13 @@ def main(args):
 
     num_measurements = data["num_measurements"]
     T = np.linspace(data["min_T"], data["max_T"], num_measurements)
+    mu = []
+
 
     print(f"Computing {num_measurements} persistence diagrams...")
     for i in range(num_measurements):
         img = np.load(os.path.join(args.path_to_folder, f"{i}.npy"))
+        mu.append(compute_magnetization(img))
 
         a = args.a
         b = args.b
@@ -101,7 +107,7 @@ def main(args):
         fig = plt.figure(figsize=(9,9))
         ax = fig.add_subplot(111, projection='3d')
         plot_rips(ax, f, torus, 2*b)
-        plt.savefig(os.path.join(args.path_to_output, f"{i}_torus.svg"), format='svg')
+        plt.savefig(os.path.join(args.path_to_output, f"{i}_torus.pdf"))
         plt.close(fig)
 
         fig_barcode = plt.figure(figsize = (17,9))
@@ -111,13 +117,23 @@ def main(args):
         ax_barcode.set_ylabel("Generator")
         ax_barcode.grid(True)
         ax_barcode.set_title(f"Persistence barcode of $H_{args.dim}(R_\delta)$ at $T={T[i]}$. Persistent generators {num_persistent}.")
-        plt.savefig(os.path.join(args.path_to_output, f"{i}_barcode.svg"), format='svg')
+        plt.savefig(os.path.join(args.path_to_output, f"{i}_barcode.pdf"))
         plt.close(fig_barcode)
 
         # Progress
         sys.stdout.write('\r')
         sys.stdout.write("[%-20s] %d%% at T=%.02f" % ('='*int(20 * (i+1) / num_measurements), 100*(i+1) / num_measurements, T[i]))
         sys.stdout.flush()
+
+    plt.figure(figsize=(15,7))
+    plt.plot(T, np.abs(mu), 'ko')
+    plt.grid(True)
+    plt.xlabel("Temperature $T$")
+    Tc = 2/np.log(1+np.sqrt(2))
+    plt.axvline(x=Tc, linestyle='--', color='r')
+    plt.ylabel("Magnetization $|\mu|$")
+    plt.savefig(os.path.join(args.path_to_output, "magnetization.pdf"))
+    # plt.show()
 
 
 if __name__ == "__main__":
