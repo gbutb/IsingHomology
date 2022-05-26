@@ -1,6 +1,7 @@
 *.pyc
 .vscode/
 .DS_Store
+*.pdf
 
 output/*
 output_1/*
